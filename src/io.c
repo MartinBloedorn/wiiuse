@@ -40,6 +40,7 @@
 #include "os.h" /* for wiiuse_os_* */
 
 #include <stdlib.h> /* for free, malloc */
+#include <string.h> /* wiimosc patch: memset */
 
 /**
  *  @brief Find a wiimote or wiimotes.
@@ -132,6 +133,12 @@ int wiiuse_wait_report(struct wiimote_t *wm, int report, byte *buffer, int buffe
 
     for (;;)
     {
+        /* wiimosc patch: a disconnected device will never answer */
+        if (!WIIMOTE_IS_CONNECTED(wm))
+        {
+            return -1;
+        }
+
         if (wiiuse_os_read(wm, buffer, bufferLength) > 0)
         {
             if (buffer[0] == report)
@@ -182,6 +189,7 @@ void wiiuse_read_data_sync(struct wiimote_t *wm, byte memory, unsigned addr, uns
     byte *output;
     unsigned int i;
     int done = 0;
+    int attempts = 0;
 
     /*
      * address in big endian first, the leading byte will
@@ -195,9 +203,19 @@ void wiiuse_read_data_sync(struct wiimote_t *wm, byte memory, unsigned addr, uns
     /* length in big endian */
     to_big_endian_uint16_t(pkt + 4, size);
 
+    /* wiimosc patch: callers expect data, so start from zeroes in case all attempts fail */
+    memset(data, 0, size);
+
     done = 0;
     while (!done)
     {
+        /* wiimosc patch: give up instead of retrying forever (each attempt can take WIIUSE_READ_TIMEOUT) */
+        if (!WIIMOTE_IS_CONNECTED(wm) || attempts++ >= 3)
+        {
+            WIIUSE_WARNING("(id %i) giving up reading 0x%x.", wm->unid, addr);
+            return;
+        }
+
         /* send */
         wiiuse_send(wm, WM_CMD_READ_DATA, pkt, sizeof(pkt));
 

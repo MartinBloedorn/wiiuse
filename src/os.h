@@ -43,6 +43,8 @@ extern "C" {
 /** @defgroup internal_io Internal: Platform-specific Device I/O */
 /** @{ */
 void wiiuse_init_platform_fields(struct wiimote_t *wm);
+/* wiimosc patch: resets a single wiimote structure, see wiiuse.c */
+void wiiuse_init_wiimote(struct wiimote_t *wm, int unid);
 void wiiuse_cleanup_platform_fields(struct wiimote_t *wm);
 
 int wiiuse_os_find(struct wiimote_t **wm, int max_wiimotes, int timeout);

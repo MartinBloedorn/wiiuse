@@ -105,6 +105,38 @@ void wiiuse_cleanup(struct wiimote_t **wm, int wiimotes)
  *	The array returned by this function can be passed to various
  *	functions, including wiiuse_connect().
  */
+/**
+ *	@brief Initialize (or reset) a single wiimote structure to its defaults.
+ *
+ *	wiimosc patch: factored out of wiiuse_init(), so that wiiuse_os_find() can reset a
+ *	slot that previously held another device.
+ */
+void wiiuse_init_wiimote(struct wiimote_t *wm, int unid)
+{
+    memset(wm, 0, sizeof(struct wiimote_t));
+
+    wm->unid = unid;
+    wiiuse_init_platform_fields(wm);
+
+    wm->state = WIIMOTE_INIT_STATES;
+    wm->flags = WIIUSE_INIT_FLAGS;
+
+    wm->event = WIIUSE_NONE;
+
+    wm->exp.type        = EXP_NONE;
+    wm->expansion_state = 0;
+
+    wiiuse_set_aspect_ratio(wm, WIIUSE_ASPECT_4_3);
+    wiiuse_set_ir_position(wm, WIIUSE_IR_ABOVE);
+
+    wm->orient_threshold = 0.5f;
+    wm->accel_threshold  = 5;
+
+    wm->accel_calib.st_alpha = WIIUSE_DEFAULT_SMOOTH_ALPHA;
+
+    wm->type = WIIUSE_WIIMOTE_REGULAR;
+}
+
 struct wiimote_t **wiiuse_init(int wiimotes)
 {
     int i                 = 0;
@@ -144,28 +176,7 @@ struct wiimote_t **wiiuse_init(int wiimotes)
     for (i = 0; i < wiimotes; ++i)
     {
         wm[i] = (struct wiimote_t *)malloc(sizeof(struct wiimote_t));
-        memset(wm[i], 0, sizeof(struct wiimote_t));
-
-        wm[i]->unid = i + 1;
-        wiiuse_init_platform_fields(wm[i]);
-
-        wm[i]->state = WIIMOTE_INIT_STATES;
-        wm[i]->flags = WIIUSE_INIT_FLAGS;
-
-        wm[i]->event = WIIUSE_NONE;
-
-        wm[i]->exp.type        = EXP_NONE;
-        wm[i]->expansion_state = 0;
-
-        wiiuse_set_aspect_ratio(wm[i], WIIUSE_ASPECT_4_3);
-        wiiuse_set_ir_position(wm[i], WIIUSE_IR_ABOVE);
-
-        wm[i]->orient_threshold = 0.5f;
-        wm[i]->accel_threshold  = 5;
-
-        wm[i]->accel_calib.st_alpha = WIIUSE_DEFAULT_SMOOTH_ALPHA;
-
-        wm[i]->type = WIIUSE_WIIMOTE_REGULAR;
+        wiiuse_init_wiimote(wm[i], i + 1);
     }
 
     return wm;

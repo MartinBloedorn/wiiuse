@@ -568,9 +568,12 @@ static void event_status(struct wiimote_t *wm, byte *msg)
         led[3] = 1;
     }
 
-    /* probe for Motion+ */
-    if (!WIIMOTE_IS_SET(wm, WIIMOTE_STATE_MPLUS_PRESENT))
+    /* probe for Motion+
+     * wiimosc patch: only once per connection. The probe is a synchronous read, which devices without a Motion+
+     * (e.g. the Balance Board) sometimes don't answer, blocking for WIIUSE_READ_TIMEOUT on every status report. */
+    if (!WIIMOTE_IS_SET(wm, WIIMOTE_STATE_MPLUS_PRESENT) && !WIIMOTE_IS_SET(wm, WIIMOTE_STATE_MPLUS_PROBED))
     {
+        WIIMOTE_ENABLE_STATE(wm, WIIMOTE_STATE_MPLUS_PROBED);
         wiiuse_probe_motion_plus(wm);
     }
 

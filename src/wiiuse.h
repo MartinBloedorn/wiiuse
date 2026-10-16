@@ -148,6 +148,7 @@
 #define WIIMOTE_STATE_EXP_EXTERN         0x20000    /* actual M+ connection exists but handshake failed */
 #define WIIMOTE_STATE_EXP_FAILED         0x40000    /* actual M+ connection exists but handshake failed */
 #define WIIMOTE_STATE_MPLUS_PRESENT      0x80000 /* Motion+ is connected */
+#define WIIMOTE_STATE_MPLUS_PROBED       0x100000 /* wiimosc patch: Motion+ probe already ran on this connection */
 
 #define WIIMOTE_ID(wm) (wm->unid)
 
@@ -823,6 +824,7 @@ typedef struct wiimote_t
     int timeout;               /**< read timeout							*/
     byte normal_timeout;       /**< normal timeout							*/
     byte exp_timeout;          /**< timeout for expansion handshake		*/
+    char dev_path[256];        /**< HID device path (wiimosc patch)		*/
                                       /** @} */
 #endif
 
