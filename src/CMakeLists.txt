@@ -36,18 +36,8 @@ if(WIN32)
 	list(APPEND SOURCES os_win.c)
 	set(CMAKE_DEBUG_POSTFIX _debug)
 elseif(APPLE)
-	set(MAC_OBJC_SOURCES
-		os_mac/os_mac.m
-		os_mac/os_mac_interface.m
-		os_mac/os_mac_find.m)
-	set(MAC_SOURCES
-		os_mac/os_mac.h
-		os_mac/os_mac.c
-		${MAC_OBJC_SOURCES})
-	list(APPEND SOURCES ${MAC_SOURCES})
-	# make sure we use the gcc for Objective-C files as well so that the
-	# sysroot and deployment target arguments are correctly passed to the compiler
-	set_source_files_properties(${MAC_OBJC_SOURCES} PROPERTIES LANGUAGE C)
+	# wiimosc patch: IOKit HID backend instead of the IOBluetooth one in os_mac/ (see os_mac_hid.c)
+	list(APPEND SOURCES os_mac_hid.c)
 elseif(WITH_BT_EMBEDDED)
 	list(APPEND SOURCES os_bt_embedded.c)
 else()
@@ -74,20 +64,8 @@ elseif(WITH_BT_EMBEDDED)
 elseif(LINUX)
 	target_link_libraries(wiiuse m rt ${BLUEZ_LIBRARIES})
 elseif(APPLE)
-	# link libraries
-	find_library(IOBLUETOOTH_FRAMEWORK
-		NAMES
-		IOBluetooth)
-	find_library(COREFOUNDATION_FRAMEWORK
-		NAMES
-		CoreFoundation)
-	find_library(FOUNDATION_FRAMEWORK
-		NAMES
-		Foundation)
-	target_link_libraries(wiiuse ${IOBLUETOOTH_FRAMEWORK} ${COREFOUNDATION_FRAMEWORK} ${FOUNDATION_FRAMEWORK})
-
-	# do not link Objective-C runtime with clang
-	set_target_properties(wiiuse PROPERTIES XCODE_ATTRIBUTE_CLANG_LINK_OBJC_RUNTIME "NO")
+	# wiimosc patch: the IOKit HID backend needs IOKit and CoreFoundation only
+	target_link_libraries(wiiuse "-framework IOKit" "-framework CoreFoundation")
 endif()
 
 set_property(TARGET

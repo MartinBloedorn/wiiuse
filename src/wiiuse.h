@@ -832,6 +832,11 @@ typedef struct wiimote_t
     /** @name Mac OS X-specific members */
     /** @{ */
     void *objc_wm; /**  WiiuseWiimote* as opaque pointer       */
+    /* wiimosc patch: members of the IOKit HID backend (os_mac_hid.c), which replaces the IOBluetooth one */
+    void *hid_device;     /**< IOHIDDeviceRef							*/
+    void *hid_reports;    /**< queue of received input reports			*/
+    char dev_path[256];   /**< IORegistry entry id, identifies open devices */
+    char dev_serial[64];  /**< HID serial number: the Bluetooth address	*/
                           /** @} */
 #endif
 
