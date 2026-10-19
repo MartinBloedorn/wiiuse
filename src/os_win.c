@@ -413,6 +413,9 @@ int wiiuse_os_write(struct wiimote_t *wm, byte report_type, byte *buf, int len)
         return 0;
     }
 
+    /* wiimosc patch: the 22 bytes written include padding for short reports; zero it rather than sending stack
+     * garbage (macOS sends only len + 1 bytes). */
+    memset(write_buffer, 0, sizeof(write_buffer));
     write_buffer[0] = report_type;
     memcpy(write_buffer + 1, buf, len);
 

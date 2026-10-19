@@ -301,6 +301,17 @@ void propagate_event(struct wiimote_t *wm, byte event, byte *msg)
     case WM_RPT_WRITE:
     {
         /* event_data_write(wm, msg); */
+        /* wiimosc patch (diagnostics): print acknowledgements if WIIUSE_LOG_ACKS is set. msg: buttons (2), the
+         * acknowledged report id, the error code. */
+        static int log_acks = -1;
+        if (log_acks < 0)
+        {
+            log_acks = getenv("WIIUSE_LOG_ACKS") != NULL;
+        }
+        if (log_acks)
+        {
+            printf("[ack] (id %i) report 0x%.2x error %i\n", wm->unid, msg[2], msg[3]);
+        }
         break;
     }
     default:
