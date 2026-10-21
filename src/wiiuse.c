@@ -759,21 +759,12 @@ void wiiuse_send_next_pending_write_request(struct wiimote_t *wm)
  */
 int wiiuse_send(struct wiimote_t *wm, byte report_type, byte *msg, int len)
 {
-    switch (report_type)
+    /* wiimosc patch: the rumble flag on every output report, not just 0x11, 0x14 and 0x15. The remote takes the bit
+     * from each report it gets, so a register write (0x16), read (0x17) or IR enable (0x13, 0x1a) without it
+     * switched the motor off, e.g. the connection rumble when the MotionPlus is enabled right after connecting. */
+    if (len > 0 && WIIMOTE_IS_SET(wm, WIIMOTE_STATE_RUMBLE))
     {
-    case WM_CMD_LED:
-    case WM_CMD_RUMBLE:
-    case WM_CMD_CTRL_STATUS:
-    {
-        /* Rumble flag for: 0x11, 0x13, 0x14, 0x15, 0x19 or 0x1a */
-        if (WIIMOTE_IS_SET(wm, WIIMOTE_STATE_RUMBLE))
-        {
-            msg[0] |= 0x01;
-        }
-        break;
-    }
-    default:
-        break;
+        msg[0] |= 0x01;
     }
 
 #ifdef WITH_WIIUSE_DEBUG
