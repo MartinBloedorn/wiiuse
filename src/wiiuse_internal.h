@@ -56,7 +56,7 @@
 #define WIIUSE_WIN32
 #elif defined(__linux)
 #define WIIUSE_PLATFORM
-#define WIIUSE_BLUEZ
+#define WIIUSE_LINUX_L2CAP /* wiimosc patch: L2CAP backend without libbluetooth (os_linux_l2cap.c), not os_nix.c */
 #elif defined(__APPLE__)
 #define WIIUSE_PLATFORM
 #define WIIUSE_MAC
@@ -68,9 +68,9 @@
 #ifdef WIIUSE_WIN32
 #include <winsock2.h>
 #endif
-#ifdef WIIUSE_BLUEZ
+#ifdef WIIUSE_LINUX_L2CAP
 #include <arpa/inet.h> /* htons() */
-#include <bluetooth/bluetooth.h>
+#include <string.h>   /* memcpy(); bluetooth.h used to pull it in */
 #endif
 #ifdef WIIUSE_BT_EMBEDDED
 #include <arpa/inet.h> /* htons() */

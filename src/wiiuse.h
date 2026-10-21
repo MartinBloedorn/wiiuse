@@ -86,7 +86,7 @@
 #define WIIUSE_WIN32
 #elif defined(__linux)
 #define WIIUSE_PLATFORM
-#define WIIUSE_BLUEZ
+#define WIIUSE_LINUX_L2CAP /* wiimosc patch: L2CAP backend without libbluetooth (os_linux_l2cap.c), not os_nix.c */
 #elif defined(__APPLE__)
 #define WIIUSE_PLATFORM
 #define WIIUSE_MAC
@@ -104,10 +104,6 @@
 #define _WIN32_WINNT 0x0A00
 #endif
 #include <windows.h>
-#endif
-#ifdef WIIUSE_BLUEZ
-/* nix */
-#include <bluetooth/bluetooth.h>
 #endif
 #ifdef WIIUSE_BT_EMBEDDED
 #include <bt-embedded/l2cap.h>
@@ -795,14 +791,14 @@ typedef struct wiimote_t
 {
     int unid; /**< user specified id						*/
 
-#ifdef WIIUSE_BLUEZ
-    /** @name Linux-specific (BlueZ) members */
+#ifdef WIIUSE_LINUX_L2CAP
+    /** @name Linux-specific members (wiimosc patch: os_linux_l2cap.c) */
     /** @{ */
-    char bdaddr_str[18]; /**< readable bt address					*/
-    bdaddr_t bdaddr;     /**< bt address								*/
-    int out_sock;        /**< output socket							*/
-    int in_sock;         /**< input socket 							*/
-                                /** @} */
+    int out_sock;        /**< L2CAP output (control) channel			*/
+    int in_sock;         /**< L2CAP input (interrupt) channel			*/
+    char dev_path[256];  /**< Bluetooth address, identifies open devices	*/
+    char dev_serial[64]; /**< Bluetooth address, as for the other platforms	*/
+                         /** @} */
 #endif
 
 #ifdef WIIUSE_BT_EMBEDDED
@@ -995,6 +991,11 @@ WIIUSE_EXPORT extern int wiiuse_set_flags(struct wiimote_t *wm, int enable, int 
 WIIUSE_EXPORT extern float wiiuse_set_smooth_alpha(struct wiimote_t *wm, float alpha);
 WIIUSE_EXPORT extern void wiiuse_set_bluetooth_stack(struct wiimote_t **wm, int wiimotes,
                                                      enum win_bt_stack_t type);
+#ifdef WIIUSE_LINUX_L2CAP
+/* wiimosc patch: tells wiiuse_find() to connect to the remote at \a address ("XX:XX:XX:XX:XX:XX") next. The
+ * application discovers the remotes (the L2CAP backend does no scanning). Offering a connected remote does nothing. */
+WIIUSE_EXPORT extern void wiiuse_linux_offer(const char *address, int is_motion_plus_inside);
+#endif
 WIIUSE_EXPORT extern void wiiuse_set_orient_threshold(struct wiimote_t *wm, float threshold);
 WIIUSE_EXPORT extern void wiiuse_resync(struct wiimote_t *wm);
 WIIUSE_EXPORT extern void wiiuse_set_timeout(struct wiimote_t **wm, int wiimotes, byte normal_timeout,

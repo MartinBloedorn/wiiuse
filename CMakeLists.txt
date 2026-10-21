@@ -53,10 +53,9 @@ if(NOT WIN32 AND NOT APPLE)
 		pkg_check_modules(BTE REQUIRED IMPORTED_TARGET bt-embedded)
 		add_definitions(-DWIIUSE_BT_EMBEDDED)
 		add_definitions(-DWIIUSE_PLATFORM)
-	else()
-		find_package(Bluez REQUIRED)
-		include_directories(${BLUEZ_INCLUDE_DIRS})
 	endif()
+	# wiimosc patch: without bt-embedded, Linux uses the L2CAP backend (os_linux_l2cap.c), which needs no BlueZ
+	# libraries.
 
 	include("GNUInstallDirs")
 else()
